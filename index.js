@@ -149,8 +149,15 @@ function addEmployees(){
 };
 
 function viewDepartments(){
-    console.log("Fetching department data...");
-    startTracker();
+    // console.log("Fetching department data...");
+    connection.query(`SELECT name AS "Current Department List" FROM department`, function (err, res){
+        if(err){
+            throw err
+        } else{
+            console.table(res);
+            startTracker();
+        }
+    })
 };
 
 function viewRoles(){
