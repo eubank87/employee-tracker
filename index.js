@@ -1,6 +1,7 @@
 const mysql = require("mysql");
 const inquirer = require("inquirer");
 
+// connecting to mysql server
 const connection = mysql.createConnection({
     host: "localhost",
     port: 3306,
@@ -9,6 +10,7 @@ const connection = mysql.createConnection({
     database: "tracker_db"
 });
 
+// function for what to do with connection
 connection.connect(function (err){
     if(err){
         throw err
@@ -19,8 +21,10 @@ connection.connect(function (err){
     }
 });
 
+// function to start program
 function startTracker(){
     // console.clear();
+    // initial list of options, way to end/exit program and default for invalid option
     inquirer.prompt([
         {
             type: "list",
@@ -64,13 +68,14 @@ function startTracker(){
                 break;
 
             default:
-                console.log("Please enter a valid answer");
+                console.log("Please enter a valid option");
                 startTracker();
                 break;
         }
     })
 };
 
+// functions for switch case in order they're asked
 function addDepartments(){
     // console.log("Adding department...");
     inquirer.prompt([
@@ -79,6 +84,7 @@ function addDepartments(){
             message: "Enter department name",
             name: "depName"
         }
+        // pulling user input for name and inserting into department table
     ]).then((ans)=>{
         connection.query("INSERT INTO department (name) VALUES (?)", [ans.depName], function (err, res){
             if(err){
@@ -93,11 +99,13 @@ function addDepartments(){
 
 function addRoles(){
     // console.log("Adding role...");
+    // empty array to push inquirer object into
     const depArr = []
     connection.query("SELECT id, name FROM department", function (err, depData){
         if(err){
             throw err
         } else{
+            // for loop running over data fetched from department table for name & id
             for(let i = 0; i<depData.length; i++){
                 const inqObj = {
                     id: depData[i].id,
@@ -105,7 +113,7 @@ function addRoles(){
                 }
                 depArr.push(inqObj);
             }
-
+            // use new department array variable as choices in new prompt
             inquirer.prompt([
                 {
                     type: "list",
@@ -124,12 +132,17 @@ function addRoles(){
                     name: "newSal"
                 }
             ]).then((ans)=>{
+                // each department has unique id auto incremented by sql. Need to fetch associated id for department selected for new role.
+                // variable to hold id info
                 let depId;
+                // for loop running over data fetched from department table
                 for(let i = 0; i<depData.length; i++){
+                    // conditional to check if selected dept name = dept name in array created above. If they match, set = to new variable for dept id.
                     if(depArr[i].name === ans.depName){
                         depId = depArr[i].id;
                     }
                 }
+                // insert new role into roles table in sql file
                 connection.query("INSERT INTO roles (title, salary, department_id) VALUES (?, ?, ?)", [ans.newRole, ans.newSal, depId], function (err, res){
                     if(err){
                         throw err
@@ -150,7 +163,8 @@ function addEmployees(){
 
 function viewDepartments(){
     // console.log("Fetching department data...");
-    connection.query(`SELECT name AS "Current Department List" FROM department`, function (err, res){
+    // fetching data from department table with column title added
+    connection.query(`SELECT name AS "Department List" FROM department`, function (err, res){
         if(err){
             throw err
         } else{
