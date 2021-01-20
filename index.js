@@ -92,8 +92,55 @@ function addDepartments(){
 };
 
 function addRoles(){
-    console.log("Adding role...");
-    startTracker();
+    // console.log("Adding role...");
+    const depArr = []
+    connection.query("SELECT id, name FROM department", function (err, depData){
+        if(err){
+            throw err
+        } else{
+            for(let i = 0; i<depData.length; i++){
+                const inqObj = {
+                    id: depData[i].id,
+                    name: depData[i].name
+                }
+                depArr.push(inqObj);
+            }
+
+            inquirer.prompt([
+                {
+                    type: "list",
+                    message: "Choose a department:",
+                    choices: depArr,
+                    name: "depName"
+                },
+                {
+                    type: "input",
+                    message: "What is the new role?",
+                    name: "newRole"
+                },
+                {
+                    type: "number",
+                    message: "Enter salary:",
+                    name: "newSal"
+                }
+            ]).then((ans)=>{
+                let depId;
+                for(let i = 0; i<depData.length; i++){
+                    if(depArr[i].name === ans.depName){
+                        depId = depArr[i].id;
+                    }
+                }
+                connection.query("INSERT INTO roles (title, salary, department_id) VALUES (?, ?, ?)", [ans.newRole, ans.newSal, depId], function (err, res){
+                    if(err){
+                        throw err
+                    } else{
+                        console.log("New role created");
+                        startTracker();
+                    }
+                })
+            })
+        }
+    })
 };
 
 function addEmployees(){
