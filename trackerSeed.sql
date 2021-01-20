@@ -7,7 +7,7 @@ VALUES ("Ashley", "Eubank", 5, 2),
 INSERT INTO employee (first_name, last_name, role_id)
 VALUES ("Garthie", "McGartherson", 6, 1);
 
-INSERT INTO role (title, salary, department_id)
+INSERT INTO roles (title, salary, department_id)
 VALUES ("Manager", 100000, 1),
 ("Assistant Manager", 70000, 2);
 
