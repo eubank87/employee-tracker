@@ -300,7 +300,7 @@ function viewRoles() {
 
 function viewEmployees() {
     // console.log("Fetching employee data...");
-    connection.query(`SELECT employee.id, first_name, last_name, salary, manager_id, department.name AS department, roles.title AS position FROM employee JOIN roles ON employee.roles_id = roles.id JOIN department ON roles.department_id = department.id`, function (err, res) {
+    connection.query(`SELECT employee.id, first_name, last_name, department.name AS department, roles.title AS position, salary, manager_id FROM employee JOIN roles ON employee.roles_id = roles.id JOIN department ON roles.department_id = department.id`, function (err, res) {
         if (err) {
             throw err
         } else {
@@ -329,6 +329,7 @@ function updateRoles() {
         // follow same process as above for employee info
         const empNames = [];
         let empData;
+
         connection.query("SELECT id, first_name, last_name FROM employee", function (err, res) {
             if (err) {
                 throw err
@@ -355,24 +356,37 @@ function updateRoles() {
                         name: "role"
                     }
                 ]).then((ans) => {
-                    // fetch corresponding data from roles table based on user entry
-                    let roleId;
-                    for (let i = 0; i < rolesData.length; i++) {
-                        if (rolesData[i].title === ans.role) {
-                            roleId = rolesData[i].id;
-                        } else {
-                            console.log("Uh-oh!")
-                        }
-                    }
-                    // update employee table with new role id
-                    connection.query(`UPDATE employee SET roles_id = ? WHERE CONCAT(first_name, " ", last_name) = ?`, [roleId, ans.employee], function (err, res) {
-                        if (err) {
+                    const newRole = {roles_id: ans.newRole}
+                    const employeeId = {id: ans.role}
+                    const query = `UPDATE employee SET ? WHERE ? SELECT CONCAT(first_name, ' ', last_name) AS name FROM employee WHERE ?`
+                    connection.query(query, [newRole, employeeId, employeeId], function (err, res){
+                        if(err){
                             throw err
-                        } else {
-                            console.log("Employee role updated!");
+                        } else{
+                            console.log(`Updated ${res[1][0].name}`)
                             startTracker();
                         }
                     })
+
+
+                    // // fetch corresponding data from roles table based on user entry
+                    // let roleId;
+                    // for (let i = 0; i < rolesData.length; i++) {
+                    //     if (rolesData[i].title === ans.role) {
+                    //         roleId = rolesData[i].id;
+                    //     } else {
+                    //         console.log("Uh-oh!")
+                    //     }
+                    // }
+                    // // update employee table with new role id
+                    // connection.query(`UPDATE employee SET roles_id = ? WHERE CONCAT(first_name, " ", last_name) = ?`, [roleId, ans.employee], function (err, res) {
+                    //     if (err) {
+                    //         throw err
+                    //     } else {
+                    //         console.log("Employee role updated!");
+                    //         startTracker();
+                    //     }
+                    // })
                 })
             }
         })
