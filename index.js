@@ -11,10 +11,10 @@ const connection = mysql.createConnection({
 });
 
 // function for what to do with connection
-connection.connect(function (err){
-    if(err){
+connection.connect(function (err) {
+    if (err) {
         throw err
-    } else{
+    } else {
         console.log("connected as id " + connection.threadId);
         // console.clear();
         startTracker();
@@ -22,7 +22,7 @@ connection.connect(function (err){
 });
 
 // function to start program
-function startTracker(){
+function startTracker() {
     // console.clear();
     // initial list of options, way to end/exit program and default for invalid option
     inquirer.prompt([
@@ -32,8 +32,8 @@ function startTracker(){
             choices: ["Add departments", "Add roles", "Add employees", "View departments", "View roles", "View employees", "Update employee roles", "Exit"],
             name: "start"
         }
-    ]).then((ans)=>{
-        switch(ans.start){
+    ]).then((ans) => {
+        switch (ans.start) {
             case "Add departments":
                 addDepartments();
                 break;
@@ -76,7 +76,7 @@ function startTracker(){
 };
 
 // functions for switch case in order they're asked
-function addDepartments(){
+function addDepartments() {
     // console.log("Adding department...");
     inquirer.prompt([
         {
@@ -85,11 +85,11 @@ function addDepartments(){
             name: "depName"
         }
         // pulling user input for name and inserting into department table
-    ]).then((ans)=>{
-        connection.query("INSERT INTO department (name) VALUES (?)", [ans.depName], function (err, res){
-            if(err){
+    ]).then((ans) => {
+        connection.query("INSERT INTO department (name) VALUES (?)", [ans.depName], function (err, res) {
+            if (err) {
                 throw err
-            } else{
+            } else {
                 console.log(`${ans.depName} added to departments`);
                 startTracker();
             }
@@ -97,16 +97,16 @@ function addDepartments(){
     })
 };
 
-function addRoles(){
+function addRoles() {
     // console.log("Adding role...");
     // empty array to push inquirer object into
     const depArr = []
-    connection.query("SELECT id, name FROM department", function (err, depData){
-        if(err){
+    connection.query("SELECT id, name FROM department", function (err, depData) {
+        if (err) {
             throw err
-        } else{
+        } else {
             // for loop running over data fetched from department table for name & id
-            for(let i = 0; i<depData.length; i++){
+            for (let i = 0; i < depData.length; i++) {
                 const inqObj = {
                     id: depData[i].id,
                     name: depData[i].name
@@ -131,22 +131,22 @@ function addRoles(){
                     message: "Enter salary:",
                     name: "newSal"
                 }
-            ]).then((ans)=>{
+            ]).then((ans) => {
                 // each department has unique id auto incremented by sql. Need to fetch associated id for department selected for new role.
                 // variable to hold id info
                 let depId;
                 // for loop running over data fetched from department table
-                for(let i = 0; i<depData.length; i++){
+                for (let i = 0; i < depData.length; i++) {
                     // conditional to check if selected dept name = dept name in array created above. If they match, set = to new variable for dept id.
-                    if(depArr[i].name === ans.depName){
+                    if (depArr[i].name === ans.depName) {
                         depId = depArr[i].id;
                     }
                 }
                 // insert new role into roles table in sql file
-                connection.query("INSERT INTO roles (title, salary, department_id) VALUES (?, ?, ?)", [ans.newRole, ans.newSal, depId], function (err, res){
-                    if(err){
+                connection.query("INSERT INTO roles (title, salary, department_id) VALUES (?, ?, ?)", [ans.newRole, ans.newSal, depId], function (err, res) {
+                    if (err) {
                         throw err
-                    } else{
+                    } else {
                         console.log("New role created");
                         startTracker();
                     }
@@ -156,35 +156,127 @@ function addRoles(){
     })
 };
 
-function addEmployees(){
-    console.log("Adding employee...");
+function addEmployees() {
+    // console.log("Adding employee...");
+    // empty arrays for role data to live
+    const rolesTitle = [];
+    const rolesData = [];
+    connection.query("SELECT id, title FROM roles", function (err, res) {
+        if (err) {
+            throw err
+        } else {
+            // for loop to run over response and pull id and title info
+            for (let i = 0; i < res.length; i++) {
+                const roleObj = {};
+                roleObj.id = res[i].id;
+                roleObj.title = res[i].title;
+                // push new role object into data array
+                rolesData.push(roleObj);
+                // push new role object title into title array
+                rolesTitle.push(res[i].title);
+            }
+
+            // follow similar cadence for employee info
+            const empNames = [];
+            const empData = [];
+            connection.query("SELECT id, first_name, last_name FROM employee", function (err, res) {
+                if (err) {
+                    throw err
+                } else {
+                    for (let i = 0; i < res.length; i++) {
+                        const empObj = {};
+                        empObj.id = res[i].id;
+
+                        const firstLastName = `${res[i].first_name} ${res[i].last_name}`;
+                        empObj.name = firstLastName;
+
+                        empData.push(empObj);
+                        empNames.push(firstLastName);
+                    }
+
+                    inquirer.prompt([
+                        {
+                            type: "input",
+                            message: "What is the employee's first name?",
+                            name: "first"
+                        },
+                        {
+                            type: "input",
+                            message: "What is the employee's last name?",
+                            name: "last"
+                        },
+                        {
+                            type: "list",
+                            message: "What is the employee's role?",
+                            choices: rolesTitle,
+                            name: "role"
+                        },
+                        {
+                            type: "confirm",
+                            message: "Does this employee have a manager?",
+                            name: "manager"
+                        },
+                        {
+                            type: "list",
+                            message: "Select manager name:",
+                            choices: empNames,
+                            name: "mgrName",
+                            when: function (ans) {
+                                if (ans.manager === true) {
+                                    return true;
+                                } else {
+                                    return false;
+                                }
+                            }
+                        }
+                    ])
+                }
+            }).then((ans)=>{
+                // variable to hold manager id
+                let mgrId;
+                for(let i= 0; i<empData.length; i++){
+                    if(empData[i].name === ans.mgrName){
+                        mgrId = empData[i].id;
+                    }
+                }
+
+                // variable to hold role id
+                let roleId;
+                for(let i = 0; i<rolesData.length; i++){
+                    if(ans.role === rolesData[i].title){
+                        roleId = rolesData[i].id;
+                    }
+                }
+            })
+        }
+    })
     startTracker();
 };
 
-function viewDepartments(){
+function viewDepartments() {
     // console.log("Fetching department data...");
     // fetching data from department table with column title added
-    connection.query(`SELECT name AS "Department List" FROM department`, function (err, res){
-        if(err){
+    connection.query(`SELECT name AS "Department List" FROM department`, function (err, res) {
+        if (err) {
             throw err
-        } else{
+        } else {
             console.table(res);
             startTracker();
         }
     })
 };
 
-function viewRoles(){
+function viewRoles() {
     console.log("Fetching role data...");
     startTracker();
 };
 
-function viewEmployees(){
+function viewEmployees() {
     console.log("Fetching employee data...");
     startTracker();
 };
 
-function updateRoles(){
+function updateRoles() {
     console.log("Updating role...");
     startTracker();
 };
