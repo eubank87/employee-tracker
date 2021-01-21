@@ -229,28 +229,48 @@ function addEmployees() {
                                 }
                             }
                         }
-                    ])
-                }
-            }).then((ans)=>{
-                // variable to hold manager id
-                let mgrId;
-                for(let i= 0; i<empData.length; i++){
-                    if(empData[i].name === ans.mgrName){
-                        mgrId = empData[i].id;
-                    }
-                }
+                    ]).then((ans) => {
+                        // variable to hold manager id
+                        let mgrId;
+                        for (let i = 0; i < empData.length; i++) {
+                            if (empData[i].name === ans.mgrName) {
+                                mgrId = empData[i].id;
+                            }
+                        }
 
-                // variable to hold role id
-                let roleId;
-                for(let i = 0; i<rolesData.length; i++){
-                    if(ans.role === rolesData[i].title){
-                        roleId = rolesData[i].id;
-                    }
+                        // variable to hold role id
+                        let roleId;
+                        for (let i = 0; i < rolesData.length; i++) {
+                            if (ans.role === rolesData[i].title) {
+                                roleId = rolesData[i].id;
+                            }
+                        }
+
+                        // insert collected data into tables
+                        if (ans.manager = true) {
+                            connection.query("INSERT INTO employee (first_name, last_name, roles_id, manager_id) VALUES (?, ?, ?, ?)", [ans.first, ans.last, roleId, mgrId], function (err, res) {
+                                if (err) {
+                                    throw err;
+                                } else {
+                                    console.log("Employee added!")
+                                    startTracker();
+                                }
+                            })
+                        } else {
+                            connection.query("INSERT INTO employee (first_name, last_name, roles_id) VALUES (?, ?, ?)", [ans.first, ans.last, roleId], function (err, res) {
+                                if (err) {
+                                    throw err;
+                                } else {
+                                    console.log("Employee added!");
+                                    startTracker();
+                                }
+                            })
+                        }
+                    })
                 }
             })
         }
     })
-    startTracker();
 };
 
 function viewDepartments() {
@@ -267,13 +287,27 @@ function viewDepartments() {
 };
 
 function viewRoles() {
-    console.log("Fetching role data...");
-    startTracker();
+    // console.log("Fetching role data...");
+    connection.query(`SELECT title AS "Role List" FROM roles`, function (err, res) {
+        if (err) {
+            throw err
+        } else {
+            console.table(res);
+            startTracker();
+        }
+    })
 };
 
 function viewEmployees() {
-    console.log("Fetching employee data...");
-    startTracker();
+    // console.log("Fetching employee data...");
+    connection.query(`SELECT employee.id, first_name, last_name, salary, manager_id, department.name, roles.title FROM employee JOIN roles ON employee.roles_id = roles.id JOIN department ON roles.department_id = department.id`, function (err, res) {
+        if (err) {
+            throw err
+        } else {
+            console.table(res);
+            startTracker();
+        }
+    })
 };
 
 function updateRoles() {
