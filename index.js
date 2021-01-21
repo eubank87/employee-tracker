@@ -300,7 +300,7 @@ function viewRoles() {
 
 function viewEmployees() {
     // console.log("Fetching employee data...");
-    connection.query(`SELECT employee.id, first_name, last_name, salary, manager_id, department.name, roles.title FROM employee JOIN roles ON employee.roles_id = roles.id JOIN department ON roles.department_id = department.id`, function (err, res) {
+    connection.query(`SELECT employee.id, first_name, last_name, salary, manager_id, department.name AS department, roles.title AS position FROM employee JOIN roles ON employee.roles_id = roles.id JOIN department ON roles.department_id = department.id`, function (err, res) {
         if (err) {
             throw err
         } else {
@@ -317,63 +317,64 @@ function updateRoles() {
     let rolesData;
 
     // connection query to pull data from tables
-    connection.query("SELECT id, title FROM roles", function (err, res){
-        if(err){
+    connection.query("SELECT id, title FROM roles", function (err, data) {
+        if (err) {
             throw err
-        } else{
-            for(let i = 0; i<res.length; i++){
-                rolesTitles.push(res[i].title)
+        } else {
+            for (let i = 0; i < data.length; i++) {
+                rolesTitles.push(data[i].title);
             }
         }
-    })
-    // follow same process as above for employee info
-    const empNames = [];
-    let empData;
-    connection.query("SELECT id, first_name, last_name FROM employee", function (err, res){
-        if(err){
-            throw err
-        } else{
-            for(let i = 0; i<res.length; i++){
-                empData = res;
-                // create variable to join first & last name of employee
-                const firstLast = `${res[i].first_name} ${res[i].last_name}`;
-                empNames.push(firstLast);
-                rolesData = res;
-            }
 
-            inquirer.prompt([
-                {
-                    type: "list",
-                    message: "Which employee do you want to edit?",
-                    choices: empNames,
-                    name: "employee"
-                },
-                {
-                    type: "list",
-                    message: "What is the employee's new role?",
-                    choices: rolesTitles,
-                    name: "role"
+        // follow same process as above for employee info
+        const empNames = [];
+        let empData;
+        connection.query("SELECT id, first_name, last_name FROM employee", function (err, res) {
+            if (err) {
+                throw err
+            } else {
+                for (let i = 0; i < res.length; i++) {
+                    empData = res;
+                    // create variable to join first & last name of employee
+                    const firstLast = `${res[i].first_name} ${res[i].last_name}`;
+                    empNames.push(firstLast);
+                    rolesData = res;
                 }
-            ]).then((ans)=>{
-                // fetch corresponding data from roles table based on user entry
-                let roleId;
-                for(let i = 0; i<rolesData.length; i++){
-                    if(rolesData[i].title === ans.role){
-                        roleId = rolesData[i].id;
-                    } else{
-                        console.log("Uh-oh!")
+
+                inquirer.prompt([
+                    {
+                        type: "list",
+                        message: "Which employee do you want to edit?",
+                        choices: empNames,
+                        name: "employee"
+                    },
+                    {
+                        type: "list",
+                        message: "What is the employee's new role?",
+                        choices: rolesTitles,
+                        name: "role"
                     }
-                }
-                // update employee table with new role id
-                connection.query(`UPDATE employee SET roles_id = ? WHERE CONCAT(first_name, " ", last_name) = ?`, [roleId, ans.employee], function (err, res){
-                    if(err){
-                        throw err
-                    } else{
-                        console.log("Employee role updated!");
-                        startTracker();
+                ]).then((ans) => {
+                    // fetch corresponding data from roles table based on user entry
+                    let roleId;
+                    for (let i = 0; i < rolesData.length; i++) {
+                        if (rolesData[i].title === ans.role) {
+                            roleId = rolesData[i].id;
+                        } else {
+                            console.log("Uh-oh!")
+                        }
                     }
+                    // update employee table with new role id
+                    connection.query(`UPDATE employee SET roles_id = ? WHERE CONCAT(first_name, " ", last_name) = ?`, [roleId, ans.employee], function (err, res) {
+                        if (err) {
+                            throw err
+                        } else {
+                            console.log("Employee role updated!");
+                            startTracker();
+                        }
+                    })
                 })
-            })
-        }
+            }
+        })
     })
 };
