@@ -19,7 +19,11 @@ Download VS code, install mySQL workbench, install mysql and inquirer npm packag
 
 ## Usage:
 Navigate to the file in your terminal. Use the command node index.js to start application. Follow propmts to make selection of what you'd like to do: add departments, add roles, add employees, view departments, view roles, view employees, update employee roles.
-![Terminal Start](./assets/terminal-start.png)
+![Terminal Start](./assets/start.png)
+![Departments](./assets/department.png)
+![Roles](./assets/roles.png)
+![Employees](./assets/employee.png)
+![Update](./assets/update.png)
 
 ## Contribution:
 Submit a github request or contact me below
@@ -36,7 +40,8 @@ The above copyright notice and this permission notice shall be included in all c
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ## Links:
-[Deployed Site/Related Links](https://youtu.be/FoDLpNh9cwU)
+Link to demo video:
+[Demo video](https://youtu.be/FoDLpNh9cwU)
 
 ## Questions?
 Contact me through Github:
