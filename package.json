@@ -19,6 +19,6 @@
   "homepage": "https://github.com/eubank87/employee-tracker#readme",
   "dependencies": {
     "inquirer": "^7.3.3",
-    "my-sql": "^1.2.15"
+    "mysql": "^2.18.1"
   }
 }
