@@ -101,15 +101,15 @@ function addRoles() {
     // console.log("Adding role...");
     // empty array to push inquirer object into
     const depArr = [];
-    connection.query("SELECT id, name FROM department", function (err, depData) {
+    connection.query("SELECT id, name FROM department", function (err, res) {
         if (err) {
             throw err
         } else {
             // for loop running over data fetched from department table for name & id
-            for (let i = 0; i < depData.length; i++) {
+            for (let i = 0; i < res.length; i++) {
                 const inqObj = {
-                    id: depData[i].id,
-                    name: depData[i].name
+                    id: res[i].id,
+                    name: res[i].name
                 }
                 depArr.push(inqObj);
             }
@@ -136,7 +136,7 @@ function addRoles() {
                 // variable to hold id info
                 let depId;
                 // for loop running over data fetched from department table
-                for (let i = 0; i < depData.length; i++) {
+                for (let i = 0; i < res.length; i++) {
                     // conditional to check if selected dept name = dept name in array created above. If they match, set = to new variable for dept id.
                     if (depArr[i].name === ans.depName) {
                         depId = depArr[i].id;
@@ -313,8 +313,6 @@ function viewEmployees() {
 function updateRoles() {
     // console.log("Updating role...");
     // create variables for fetched data to live
-    const empNames = [];
-    let empData;
 
     const rolesTitles = [];
     let rolesData;
@@ -330,6 +328,8 @@ function updateRoles() {
         }
 
         // follow same process as above for employee info
+        const empNames = [];
+        let empData;
 
         connection.query("SELECT id, first_name, last_name FROM employee", function (err, res) {
             if (err) {
